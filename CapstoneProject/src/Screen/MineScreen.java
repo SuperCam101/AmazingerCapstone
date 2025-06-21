@@ -8,6 +8,7 @@ import core.DrawingSurface;
 import core.Rectangle;
 import jay.jaysound.JayLayer;
 import jay.jaysound.JayLayerListener;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import sprite.Block;
 import sprite.Bomb;
@@ -24,17 +25,16 @@ import sprite.Sprite;
  */
 public class MineScreen extends Screen {
 	private DrawingSurface surface;
-
+	private PGraphics mine;
 	private Block[][] blocks;
 	private Rectangle[] borders;
 	private Rectangle menuButton;
 	private Rectangle toolButton;
 	private Rectangle reloadMineButton;
 	private Rectangle rightBorder, leftBorder, topBorder, bottomBorder;
-	private int coins;
 	private boolean showButton;
 	private PImage toTool, blockPic, chestPic, bombPic, background, gambledorfLeft, gambledorfRight, reloadMineButtonPic;
-
+	private int coins;
 	private Gambledorf character;
 	
 	private StatsScreen stats;
@@ -62,6 +62,8 @@ public class MineScreen extends Screen {
 		gambledorfLeft = new PImage();
 		gambledorfRight = new PImage();
 		
+		mine = surface.createGraphics(SCREEN_WIDTH,SCREEN_HEIGHT);
+		
 		//Creation of borders
 		leftBorder = new Rectangle(-20, 0, 20, SCREEN_HEIGHT);
 		rightBorder = new Rectangle(SCREEN_WIDTH, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -83,30 +85,19 @@ public class MineScreen extends Screen {
 		reloadPic = new PImage();
 	}
 	
-	/**
-	 * Draw the MineScreen components: mine blocks, character
-	 */
-	public void draw() {
-//		surface.background(255);
+	public void backgroundButtons() {
+		mine.beginDraw();
+		
 		surface.image(background, 0, 0, 800, 600);
-		leftBorder.draw(surface);
-		
-		surface.fill(0,0,0,0);
 		menuButton.draw(surface);
-
-//		PImage backPic = new PImage();
 		surface.image(backPic, 10, 10, 50, 50);
-
 		surface.image(reloadPic, 680, 5, 100, 100);
-//		if(character.getCoins()<0)
-//		{
-//			surface.text("YOURE IN DEBT MINE QUICKER", 120, 10);
-////			surface.text
-//		}
-		//Character draw
 		
+		mine.endDraw();
+	}
+	
+	public void gambleDraw() {
 		character.draw(surface);
-		drawBlocks(character.getX() + character.getWidth()/2, character.getY() + character.getHeight()/2);
 		character.getEquipment().setHeight(40);
 		character.getEquipment().setWidth(40);
 		character.getEquipment().setX(character.getX());
@@ -114,42 +105,45 @@ public class MineScreen extends Screen {
 		character.getEquipment().draw(surface);
 		character.getEquipment().setHeight(100);
 		character.getEquipment().setWidth(100);
-
 			
 		if(showButton) {
 			toolButton.draw(surface);
 			surface.image(toTool, 740, 540, 50, 50);
-
-
 		}
+		
 		if (surface.isPressed(KeyEvent.VK_LEFT)) {
 			character.goLeft();
-//			character.setImage(gambledorfLeft);
 			
-	}
+		}
+		
 		if (surface.isPressed(KeyEvent.VK_RIGHT)) {
 			character.goRight();
-//			character.setImage(gambledorfRight);
-	}
+		}
+		
 		if (surface.isPressed(KeyEvent.VK_UP)) {
 			character.jump();
 			
 		}
-//		if(character.getImage().equals(gambledorfLeft)) {
-//			character.getEquipment().setX(character.getX()-20);
-//			character.getEquipment().setY(character.getY()-5);
-//		} else {
-//			character.getEquipment().setX(character.getX()+5);
-//			character.getEquipment().setY(character.getY()-5);
-//		}
+		
 		character.act(blocks);
 		character.act(borders);
 		surface.textSize(50);
 		surface.fill(255);
 		surface.text("Coins: "+ character.getCoins(), 75, 50);
-//		surface.rect(0,0,100,100);
-//		character.getCenter().x
+	}
+	/**
+	 * Draw the MineScreen components: mine blocks, character
+	 */
+	public void draw() {
+		//Background layer + buttons
+		backgroundButtons();
+
+		//Character draw
+		gambleDraw();
 		
+		//Draw Blocks
+		drawBlocks(character.getX() + character.getWidth()/2, character.getY() + character.getHeight()/2);
+
 		
 	}
 	
@@ -398,18 +392,15 @@ public class MineScreen extends Screen {
 	 * @param y The y position of the character
 	 */
 	public void drawBlocks(double x, double y) {
-		//Work on this for optimization
+		//Draws the sprites according to the rectangle status
 		for(int i = 0; i<blocks.length; i++) {
 			for(int j = 0; j<blocks[0].length; j++) {
 				if(blocks[i][j]!=null) {
 					if(blocks[i][j].isViewable(blocks, i, j)) {
 						blocks[i][j].colorChange(false);
-						blocks[i][j].draw(surface);
 					}
 					else {
 						blocks[i][j].colorChange(true);
-						blocks[i][j].draw(surface);
-						
 					}
 
 				}
@@ -418,7 +409,7 @@ public class MineScreen extends Screen {
 		
 		
 		
-		//Drawing the blocks to the screen
+		//Drawing the blocks to the screen (Rectangle collision system)
 		Rectangle[][] ah = new Rectangle[12][16];
 		for(int i = 0; i<ah.length; i++) {
 			for(int j = 0; j<ah[i].length; j++) {
@@ -428,12 +419,12 @@ public class MineScreen extends Screen {
 				
 		int row = 0, col = 0;
 		
-		//Sets up the color and state of the blocks
+		//Sets up the color and state of the blocks for gamblerange
 		for(int i = 0; i<ah.length; i++) {
 			for(int j = 0; j<ah[i].length; j++) {
 				if(i!=0 && i!=1) {
 					if(blocks[i][j]!=null) {
-						surface.fill(70);
+//						blocks[i][j].colorChange(true);
 						blocks[i][j].draw(surface);
 						blocks[i][j].setClickableBlock(false);
 
@@ -444,6 +435,18 @@ public class MineScreen extends Screen {
 					col = j;
 				}
 
+			}
+		}
+		
+		//Gives t
+		for(int i = row-1; i<=row+1; i++) {
+			for(int j = col-1; j<= col+1; j++) {
+				if((i!= row || j!=col) && i>-1 && j>-1 && i<blocks.length && j<blocks[i].length) {
+					if(blocks[i][j] != null&& blocks[i][j].isViewable(blocks, i, j)) {
+						blocks[i][j].setClickableBlock(true);
+
+					}
+				}
 			}
 		}
 //		surface.noTint();
@@ -478,18 +481,6 @@ public class MineScreen extends Screen {
 //		}
 //
 //		
-		for(int i = row-1; i<=row+1; i++) {
-			for(int j = col-1; j<= col+1; j++) {
-				if((i!= row || j!=col) && i>-1 && j>-1 && i<blocks.length && j<blocks[i].length) {
-					if(blocks[i][j] != null&& blocks[i][j].isViewable(blocks, i, j)) {
-						blocks[i][j].setClickableBlock(true);
-
-					}
-				}
-			}
-		}
-		
-		
 	}
 	
 	/**
