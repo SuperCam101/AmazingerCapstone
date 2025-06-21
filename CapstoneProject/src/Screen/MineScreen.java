@@ -26,6 +26,8 @@ import sprite.Sprite;
 public class MineScreen extends Screen {
 	private DrawingSurface surface;
 	private PGraphics mine;
+	private PGraphics blockImages;
+	private PGraphics characterImage;
 	private Block[][] blocks;
 	private Rectangle[] borders;
 	private Rectangle menuButton;
@@ -40,8 +42,6 @@ public class MineScreen extends Screen {
 	private StatsScreen stats;
 	private PImage backPic;
 	private PImage reloadPic;
-
-
 
 	/**
 	 * Creates an object of type MineScreen
@@ -63,6 +63,8 @@ public class MineScreen extends Screen {
 		gambledorfRight = new PImage();
 		
 		mine = surface.createGraphics(SCREEN_WIDTH,SCREEN_HEIGHT);
+		blockImages = surface.createGraphics(SCREEN_WIDTH,SCREEN_HEIGHT);
+		characterImage = surface.createGraphics(SCREEN_WIDTH,SCREEN_HEIGHT);
 		
 		//Creation of borders
 		leftBorder = new Rectangle(-20, 0, 20, SCREEN_HEIGHT);
@@ -97,6 +99,7 @@ public class MineScreen extends Screen {
 	}
 	
 	public void gambleDraw() {
+		characterImage.beginDraw();
 		character.draw(surface);
 		character.getEquipment().setHeight(40);
 		character.getEquipment().setWidth(40);
@@ -130,19 +133,23 @@ public class MineScreen extends Screen {
 		surface.textSize(50);
 		surface.fill(255);
 		surface.text("Coins: "+ character.getCoins(), 75, 50);
+		
+		characterImage.endDraw();
 	}
 	/**
 	 * Draw the MineScreen components: mine blocks, character
 	 */
 	public void draw() {
 		//Background layer + buttons
+		
 		backgroundButtons();
-
-		//Character draw
-		gambleDraw();
 		
 		//Draw Blocks
 		drawBlocks(character.getX() + character.getWidth()/2, character.getY() + character.getHeight()/2);
+		
+		//Character draw
+		gambleDraw();
+		
 
 		
 	}
@@ -211,7 +218,6 @@ public class MineScreen extends Screen {
 						if(blocks[i][j] instanceof Bomb) {
 							stats.increaseBomb();
 							stats.increaseBlock();
-							
 							if(character.getEquipment().getName().equals("BombPickaxe")) {
 								blocks[i][j]=null;
 
@@ -392,7 +398,8 @@ public class MineScreen extends Screen {
 	 * @param y The y position of the character
 	 */
 	public void drawBlocks(double x, double y) {
-		//Draws the sprites according to the rectangle status
+		blockImages.beginDraw();
+		//Draws the sprites according to the rectangle status (change)
 		for(int i = 0; i<blocks.length; i++) {
 			for(int j = 0; j<blocks[0].length; j++) {
 				if(blocks[i][j]!=null) {
@@ -409,25 +416,28 @@ public class MineScreen extends Screen {
 		
 		
 		
-		//Drawing the blocks to the screen (Rectangle collision system)
+		//Drawing the blocks to the screen (Rectangle collision system) (once)
 		Rectangle[][] ah = new Rectangle[12][16];
 		for(int i = 0; i<ah.length; i++) {
 			for(int j = 0; j<ah[i].length; j++) {
 				ah[i][j]=new Rectangle(50*j, 50*i, 50, 50);
+				if(i!=0 && i!=1) {
+					if(blocks[i][j]!=null) {
+						blocks[i][j].draw(surface);
+
+					}
+				}
 			}
 		}
 				
 		int row = 0, col = 0;
 		
-		//Sets up the color and state of the blocks for gamblerange
+		//Sets up the color and state of the blocks for gamblerange (once)
 		for(int i = 0; i<ah.length; i++) {
 			for(int j = 0; j<ah[i].length; j++) {
 				if(i!=0 && i!=1) {
 					if(blocks[i][j]!=null) {
-//						blocks[i][j].colorChange(true);
-						blocks[i][j].draw(surface);
 						blocks[i][j].setClickableBlock(false);
-
 					}
 				}					
 				if(ah[i][j].isPointInside(x,  y)) {
@@ -438,7 +448,7 @@ public class MineScreen extends Screen {
 			}
 		}
 		
-		//Gives t
+		//Gives t (change)
 		for(int i = row-1; i<=row+1; i++) {
 			for(int j = col-1; j<= col+1; j++) {
 				if((i!= row || j!=col) && i>-1 && j>-1 && i<blocks.length && j<blocks[i].length) {
@@ -449,6 +459,8 @@ public class MineScreen extends Screen {
 				}
 			}
 		}
+		
+		blockImages.endDraw();
 //		surface.noTint();
 //		
 //		//Detecting and setting the color of adjacent locations of the character Gambledorf
