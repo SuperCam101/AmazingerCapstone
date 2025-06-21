@@ -92,7 +92,7 @@ public class Sprite extends Rectangle {
 	public void draw(PApplet p) {
 		if (image != null) {
 			if(tint)
-				p.tint(0);
+				p.tint(150,150,150);
 			p.image(image, (float) super.getX(), (float) super.getY(), (float) w, (float) h);
 			p.noTint();
 		}

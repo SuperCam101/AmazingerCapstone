@@ -399,25 +399,12 @@ public class MineScreen extends Screen {
 	 */
 	public void drawBlocks(double x, double y) {
 		blockImages.beginDraw();
-		//Draws the sprites according to the rectangle status (change)
-		for(int i = 0; i<blocks.length; i++) {
-			for(int j = 0; j<blocks[0].length; j++) {
-				if(blocks[i][j]!=null) {
-					if(blocks[i][j].isViewable(blocks, i, j)) {
-						blocks[i][j].colorChange(false);
-					}
-					else {
-						blocks[i][j].colorChange(true);
-					}
+		Rectangle[][] ah = new Rectangle[12][16];
 
-				}
-			}
-		}
 		
 		
 		
 		//Drawing the blocks to the screen (Rectangle collision system) (once)
-		Rectangle[][] ah = new Rectangle[12][16];
 		for(int i = 0; i<ah.length; i++) {
 			for(int j = 0; j<ah[i].length; j++) {
 				ah[i][j]=new Rectangle(50*j, 50*i, 50, 50);
@@ -429,7 +416,21 @@ public class MineScreen extends Screen {
 				}
 			}
 		}
-				
+		
+		//Draws the sprites according to the rectangle status (change)
+		for(int i = 0; i<blocks.length; i++) {
+			for(int j = 0; j<blocks[0].length; j++) {
+				if(blocks[i][j]!=null) {
+					if(!blocks[i][j].isViewable(blocks, i, j)) {
+//						blocks[i][j].colorChange(false);
+						ah[i][j]=new Rectangle(50*j, 50*i, 50, 50);
+						surface.fill(0);
+						ah[i][j].draw(surface);
+					}
+
+				}
+			}
+		}
 		int row = 0, col = 0;
 		
 		//Sets up the color and state of the blocks for gamblerange (once)
@@ -438,6 +439,7 @@ public class MineScreen extends Screen {
 				if(i!=0 && i!=1) {
 					if(blocks[i][j]!=null) {
 						blocks[i][j].setClickableBlock(false);
+						blocks[i][j].colorChange(false);
 					}
 				}					
 				if(ah[i][j].isPointInside(x,  y)) {
@@ -454,7 +456,7 @@ public class MineScreen extends Screen {
 				if((i!= row || j!=col) && i>-1 && j>-1 && i<blocks.length && j<blocks[i].length) {
 					if(blocks[i][j] != null&& blocks[i][j].isViewable(blocks, i, j)) {
 						blocks[i][j].setClickableBlock(true);
-
+						blocks[i][j].colorChange(true);
 					}
 				}
 			}
